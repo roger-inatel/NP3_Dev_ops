@@ -1,0 +1,85 @@
+services:
+  database:
+    image: mysql:8.0
+    container_name: biblioteca_database
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-biblioteca_pass}
+      MYSQL_DATABASE: ${DB_NAME:-biblioteca_np3}
+      MYSQL_USER: ${DB_USER:-biblioteca_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-biblioteca_pass}
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    container_name: biblioteca_backend
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      DATABASE_URL: mysql://${DB_USER:-biblioteca_user}:${DB_PASSWORD:-biblioteca_pass}@database:3306/${DB_NAME:-biblioteca_np3}
+      DB_HOST: database
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-biblioteca_user}
+      DB_PASSWORD: ${DB_PASSWORD:-biblioteca_pass}
+      DB_NAME: ${DB_NAME:-biblioteca_np3}
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+    ports:
+      - '3000:3000'
+    depends_on:
+      database:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: biblioteca_frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:3000
+    ports:
+      - '5173:80'
+    depends_on:
+      - backend
+
+  jenkins:
+    build:
+      context: ./jenkins
+    container_name: biblioteca_jenkins
+    restart: unless-stopped
+    user: root
+    environment:
+      NOTIFY_EMAIL: ${NOTIFY_EMAIL:-}
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+    ports:
+      - '8081:8080'
+      - '50000:50000'
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - mailhog
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: biblioteca_mailhog
+    restart: unless-stopped
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+
+volumes:
+  mysql_data:
+  jenkins_home:
