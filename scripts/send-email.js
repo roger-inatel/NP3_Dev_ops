@@ -1,9 +1,14 @@
-const net = require('net');
+require('dotenv').config();
+
+const nodemailer = require('nodemailer');
 
 const {
   NOTIFY_EMAIL,
   SMTP_HOST = 'localhost',
   SMTP_PORT = '1025',
+  SMTP_SECURE,
+  SMTP_USER,
+  SMTP_PASSWORD,
   BUILD_NUMBER = 'local',
   BUILD_STATUS = 'finalizado',
   JOB_NAME = 'biblioteca-np3',
@@ -15,7 +20,14 @@ if (!NOTIFY_EMAIL) {
   process.exit(1);
 }
 
-const from = process.env.MAIL_FROM || 'jenkins@biblioteca-np3.local';
+if ((SMTP_USER && !SMTP_PASSWORD) || (!SMTP_USER && SMTP_PASSWORD)) {
+  console.error('Configure SMTP_USER e SMTP_PASSWORD juntos, ou remova os dois para usar MailHog.');
+  process.exit(1);
+}
+
+const smtpPort = Number(SMTP_PORT);
+const smtpSecure = SMTP_SECURE ? SMTP_SECURE === 'true' : smtpPort === 465;
+const from = process.env.MAIL_FROM || SMTP_USER || 'jenkins@biblioteca-np3.local';
 const subject = `[Biblioteca NP3] Pipeline ${BUILD_STATUS}`;
 const body = [
   `Projeto: ${JOB_NAME}`,
@@ -26,65 +38,25 @@ const body = [
   'Mensagem enviada pelo pipeline usando variaveis de ambiente.',
 ].filter(Boolean).join('\n');
 
-function waitForResponse(socket, expectedCode) {
-  return new Promise((resolve, reject) => {
-    let buffer = '';
-
-    const onData = (chunk) => {
-      buffer += chunk.toString('utf8');
-      const lines = buffer.split(/\r?\n/).filter(Boolean);
-      const lastLine = lines[lines.length - 1] || '';
-
-      if (/^\d{3} /.test(lastLine)) {
-        socket.off('data', onData);
-
-        if (lastLine.startsWith(`${expectedCode} `)) {
-          resolve(lastLine);
-        } else {
-          reject(new Error(`Resposta SMTP inesperada: ${lastLine}`));
-        }
-      }
-    };
-
-    socket.on('data', onData);
-  });
-}
-
-async function sendCommand(socket, command, expectedCode) {
-  const response = waitForResponse(socket, expectedCode);
-  socket.write(`${command}\r\n`);
-  return response;
-}
-
 async function sendEmail() {
-  const socket = net.createConnection(Number(SMTP_PORT), SMTP_HOST);
-
-  await new Promise((resolve, reject) => {
-    socket.once('connect', resolve);
-    socket.once('error', reject);
+  const transporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: smtpPort,
+    secure: smtpSecure,
+    auth: SMTP_USER && SMTP_PASSWORD
+      ? {
+          user: SMTP_USER,
+          pass: SMTP_PASSWORD,
+        }
+      : undefined,
   });
 
-  await waitForResponse(socket, 220);
-  await sendCommand(socket, 'HELO biblioteca-np3.local', 250);
-  await sendCommand(socket, `MAIL FROM:<${from}>`, 250);
-  await sendCommand(socket, `RCPT TO:<${NOTIFY_EMAIL}>`, 250);
-  await sendCommand(socket, 'DATA', 354);
-
-  const message = [
-    `From: ${from}`,
-    `To: ${NOTIFY_EMAIL}`,
-    `Subject: ${subject}`,
-    'Content-Type: text/plain; charset=utf-8',
-    '',
-    body,
-    '.',
-  ].join('\r\n');
-
-  const dataResponse = waitForResponse(socket, 250);
-  socket.write(`${message}\r\n`);
-  await dataResponse;
-  await sendCommand(socket, 'QUIT', 221);
-  socket.end();
+  await transporter.sendMail({
+    from,
+    to: NOTIFY_EMAIL,
+    subject,
+    text: body,
+  });
 
   console.log(`Notificacao enviada para ${NOTIFY_EMAIL}`);
 }

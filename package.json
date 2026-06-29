@@ -1,0 +1,25 @@
+{
+  "name": "biblioteca-np3",
+  "version": "1.0.0",
+  "description": "Sistema de Biblioteca Simples criado para a NP3 da disciplina de DevOps e Testes.",
+  "main": "index.js",
+  "scripts": {
+    "send-email": "node scripts/send-email.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/roger-inatel/NP3_Dev_ops.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/roger-inatel/NP3_Dev_ops/issues"
+  },
+  "homepage": "https://github.com/roger-inatel/NP3_Dev_ops#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "nodemailer": "^9.0.1"
+  }
+}

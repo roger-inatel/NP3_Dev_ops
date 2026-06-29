@@ -30,8 +30,12 @@ services:
       DB_USER: ${DB_USER:-biblioteca_user}
       DB_PASSWORD: ${DB_PASSWORD:-biblioteca_pass}
       DB_NAME: ${DB_NAME:-biblioteca_np3}
-      SMTP_HOST: mailhog
-      SMTP_PORT: 1025
+      SMTP_HOST: ${SMTP_HOST:-mailhog}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-jenkins@biblioteca-np3.local}
     ports:
       - '3000:3000'
     depends_on:
@@ -60,8 +64,12 @@ services:
     user: root
     environment:
       NOTIFY_EMAIL: ${NOTIFY_EMAIL:-}
-      SMTP_HOST: mailhog
-      SMTP_PORT: 1025
+      SMTP_HOST: ${SMTP_HOST:-mailhog}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-jenkins@biblioteca-np3.local}
     ports:
       - '8082:8080'
       - '50000:50000'

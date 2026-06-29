@@ -8,6 +8,12 @@ pipeline {
       }
     }
 
+    stage('Install Notification Dependencies') {
+      steps {
+        sh 'npm ci'
+      }
+    }
+
     stage('Install Backend Dependencies') {
       steps {
         dir('backend') {
