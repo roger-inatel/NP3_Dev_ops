@@ -2,9 +2,9 @@ FROM jenkins/jenkins:lts-jdk17
 
 USER root
 
-RUN apt-get update \
+RUN apt-get update && \
     && apt-get install -y --no-install-recommends nodejs npm docker.io \
-    && apt-get clean \
+    && apt-get clean && \
     && rm -rf /var/lib/apt/lists/*
 
-USER jenkins
+USER root

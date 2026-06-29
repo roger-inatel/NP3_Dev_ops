@@ -37,7 +37,8 @@ pipeline {
         script {
           // O Jenkins vai procurar a credencial "docker-hub-credentials" que você criou na tela dele
           withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
-
+            sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+            
             //login no docker hub escondendo a senha
             sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
 
