@@ -9,7 +9,7 @@ services:
       MYSQL_USER: ${DB_USER:-biblioteca_user}
       MYSQL_PASSWORD: ${DB_PASSWORD:-biblioteca_pass}
     ports:
-      - '3306:3306'
+      - '3307:3306' #aqui altera as portas do bd, trocando por causa de conflito de sistema
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -19,8 +19,7 @@ services:
       retries: 5
 
   backend:
-    build:
-      context: ./backend
+    image: sn4r0/biblioteca-np3-backend:latest
     container_name: biblioteca_backend
     restart: unless-stopped
     environment:
@@ -64,7 +63,7 @@ services:
       SMTP_HOST: mailhog
       SMTP_PORT: 1025
     ports:
-      - '8081:8080'
+      - '8082:8080'
       - '50000:50000'
     volumes:
       - jenkins_home:/var/jenkins_home

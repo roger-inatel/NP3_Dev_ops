@@ -32,9 +32,19 @@ pipeline {
       }
     }
 
-    stage('Build Backend Image') {
+    stage('Build and Push Backend Image') {
       steps {
-        sh 'docker build -t biblioteca-np3-backend:latest backend'
+        script {
+          // O Jenkins vai procurar a credencial "docker-hub-credentials" que você criou na tela dele
+          withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
+
+            //login no docker hub escondendo a senha
+            sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+
+            sh 'docker build -t sn4r0/biblioteca-np3-backend:latest backend'
+            sh 'docker push sn4r0/biblioteca-np3-backend:latest'
+          }
+        }
       }
     }
 
