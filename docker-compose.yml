@@ -63,8 +63,7 @@ services:
       - backend
 
   jenkins:
-    build:
-      context: ./jenkins
+    image: sn4r0/jenkins-np3:latest
     container_name: biblioteca_jenkins
     restart: unless-stopped
     user: root
