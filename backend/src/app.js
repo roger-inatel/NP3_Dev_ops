@@ -22,6 +22,7 @@ app.get('/health', (req, res) => {
 
 module.exports = app;
 
+/* istanbul ignore if */
 if (require.main === module) {
   const port = process.env.PORT || 3000;
 

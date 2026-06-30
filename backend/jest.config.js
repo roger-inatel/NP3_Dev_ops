@@ -1,14 +1,17 @@
 module.exports = {
   testEnvironment: 'node',
   collectCoverage: true,
-  collectCoverageFrom: ['src/**/*.js'],
+  collectCoverageFrom: [
+    'src/**/*.js',
+    '!src/database/**', // requer MySQL real; coberto por testes de integração/E2E
+  ],
   coverageDirectory: 'coverage',
   coverageThreshold: {
     global: {
-      branches: 20,
-      functions: 20,
-      lines: 20,
-      statements: 20,
+      branches: 90,
+      functions: 90,
+      lines: 90,
+      statements: 90,
     },
   },
 };
