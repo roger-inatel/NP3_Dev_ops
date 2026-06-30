@@ -12,6 +12,8 @@ services:
       - '3307:3306' #aqui altera as portas do bd, trocando por causa de conflito de sistema
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - biblioteca_net
     healthcheck:
       test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
       interval: 10s
@@ -37,7 +39,9 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       MAIL_FROM: ${MAIL_FROM:-jenkins@biblioteca-np3.local}
     ports:
-      - '3000:3000'
+      - '3001:3000'
+    networks:
+      - biblioteca_net
     depends_on:
       database:
         condition: service_healthy
@@ -50,9 +54,11 @@ services:
     container_name: biblioteca_frontend
     restart: unless-stopped
     environment:
-      VITE_API_URL: http://localhost:3000
+      VITE_API_URL: http://localhost:3001
     ports:
       - '5173:80'
+    networks:
+      - biblioteca_net
     depends_on:
       - backend
 
@@ -76,6 +82,8 @@ services:
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - biblioteca_net
     depends_on:
       - mailhog
 
@@ -86,7 +94,13 @@ services:
     ports:
       - '1025:1025'
       - '8025:8025'
+    networks:
+      - biblioteca_net
 
 volumes:
   mysql_data:
   jenkins_home:
+
+networks:
+  biblioteca_net:
+    driver: bridge
