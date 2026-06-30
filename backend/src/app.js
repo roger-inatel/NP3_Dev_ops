@@ -2,12 +2,14 @@ require('dotenv').config();
 const express = require('express');
 const initDatabase = require('./database/init');
 const bookRoutes = require('./routes/bookRoutes');
+const readerRoutes = require('./routes/readerRoutes');
 
 const app = express();
 
 app.use(express.json());
 
 app.use('/books', bookRoutes);
+app.use('/readers', readerRoutes);
 
 app.get('/health', (req, res) => {
   res.status(200).json({
